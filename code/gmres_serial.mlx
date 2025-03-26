@@ -1,1 +1,40 @@
 
+function [x, R] = gmres_serial(A, b, m)
+% gmres_serial: 串行实现 GMRES 算法
+% 输入:
+%   A - 系数矩阵 (n x n)
+%   b - 右端项向量 (n x 1)
+%   m - 迭代次数（构造 Krylov 子空间的维数为 m+1）
+% 输出:
+%   x - GMRES 得到的近似解
+%   R - 每次迭代的相对残差记录
+
+    n = length(b);
+    x0 = zeros(n,1);        % 初始解设为零向量
+    r0 = b - A*x0;          % 初始残差
+    beta = norm(r0);        % 初始残差范数
+    
+    % 调用 Arnoldi 迭代
+    [Q, H] = arnoldi(A, r0, m);
+    
+    % 构造单位向量 e1，求解最小二乘问题 Hy ≈ beta*e1
+    e1 = zeros(m+1,1);
+    e1(1) = beta;
+    y = H \ e1;
+    
+    % 计算近似解
+    x = x0 + Q(:,1:m) * y;
+    
+    % 记录每次迭代的相对残差
+    R = zeros(m+1,1);
+    R(1) = beta / norm(b);
+    for k = 1:m
+        Hk = H(1:k+1, 1:k);
+        ek = zeros(k+1,1);
+        ek(1) = beta;
+        yk = Hk \ ek;
+        xk = x0 + Q(:,1:k) * yk;
+        rk = b - A*xk;
+        R(k+1) = norm(rk) / norm(b);
+    end
+end

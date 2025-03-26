@@ -1,1 +1,60 @@
+function [Q, H] = arnoldi(A, b, m)
+% input: 
+%       A: The square matrix to be processed
+%       b: Initial vector (I used a random number between 0 and 1 to test)
+%       m: Number of iterations (that is, how many Krylov subspace vectors
+%       to construct)
+% output:
+%       Q: Matrix containing an orthogonal basis (size n*(m+1))
+%       H: Upper Hessenberg matrx (size (m+1)*m)   
+
+n = length(A);     %get dimmension of matrix A (Assume A is a square matrix)
+Q = zeros(n, m+1); %Initialize matrice Q and H are zero matrices
+H = zeros(m+1, m);
+    
+Q(:,1) = b / norm(b);    % The initial vector u is normalized and stored as the first column of Q (q1)(this is the first step of constructing Krylov subspace),also 
+    
+for k = 1:m
+    v = A * Q(:,k); % get a new vector
+        
+        % Gram-Schmidt orthogonalization
+        for j = 1:k
+            H(j,k) = Q(:,j)' * v;    %calculate the projection
+            v = v - H(j,k) * Q(:,j);   % subtracted by projections
+        end        
+        
+        H(k+1, k) = norm(v);         % Calculate the new element of the Hessenberg matrix
+        
+        % Normalize the new orthogonal basis
+        if H(k+1, k) > 1e-10 
+            Q(:,k+1) = v / H(k+1, k);
+        else
+            break; % break the iteration
+        end
+    end
+end
+
+%% Test the Arnoldi Iteration algorithm and determine Q9
+
+% 10×10 testing matrix
+A = [3 8 7 3 3 7 2 3 4 8; 5 4 1 6 9 8 3 7 1 9;3 6 9 4 8 6 5 6 6 6;5 3 4 7 4 9 2 3 5 1;4 4 2 1 7 4 2 2 4 5;4 2 8 6 6 5 2 1 1 2;
+     2 8 9 5 2 9 4 7 3 3;9 3 2 2 7 3 4 8 7 7;9 1 9 3 3 1 2 7 7 1;9 3 2 2 6 4 4 7 3 5];
+
+% Initial vector (I used a random number between 0 and 1 to test) 
+b = rand(10, 1);
+
+% Number of iterations 
+m = 9;
+
+% Run the Arnoldi iteration
+[Q, H] = arnoldi(A, b, m);
+
+%% output Q9 vector
+disp('Q9 vector:')
+disp(Q(:,9))   % display the ninth column of the orthogonal matrix Q
+
+%% Output Hessenberg matrix H
+disp('Hessenberg Matrix H:')
+disp(H)
+
 

@@ -1,59 +1,68 @@
-function [Q, H] = arnoldi(A, b, m)
-% input: 
-%       A: The square matrix to be processed
-%       b: Initial vector (I used a random number between 0 and 1 to test)
-%       m: Number of iterations (that is, how many Krylov subspace vectors
-%       to construct)
-% output:
-%       Q: Matrix containing an orthogonal basis (size n*(m+1))
-%       H: Upper Hessenberg matrx (size (m+1)*m)   
 
-n = length(A);     %get dimmension of matrix A (Assume A is a square matrix)
-Q = zeros(n, m+1); %Initialize matrice Q and H are zero matrices
-H = zeros(m+1, m);
+---
+
+### 2. src/arnoldi.mlx
+
+在 MATLAB Live Script 中，你可以整合代码、说明文字和输出。示例内容如下：
+
+```matlab
+%% Arnoldi Iteration Function
+% 本节实现 Arnoldi 迭代算法，用于构造 Krylov 子空间的正交基 Q 和上 Hessenberg 矩阵 H.
+% 输入:
+%   A - 待处理的方阵
+%   b - 初始向量 (测试时使用 [0,1] 内的随机数)
+%   m - 迭代次数（构造 m+1 个基向量）
+% 输出:
+%   Q - 存储正交基的矩阵 (size: n x (m+1))
+%   H - 上 Hessenberg 矩阵 (size: (m+1) x m)
+
+function [Q, H] = arnoldi(A, b, m)
+    n = length(A);     % 获取矩阵 A 的维度 (假设 A 为方阵)
+    Q = zeros(n, m+1); % 初始化矩阵 Q 和 H（均为零矩阵）
+    H = zeros(m+1, m);
     
-Q(:,1) = b / norm(b);    % The initial vector u is normalized and stored as the first column of Q (q1)(this is the first step of constructing Krylov subspace),also 
+    % 初始向量归一化
+    Q(:,1) = b / norm(b);
     
-for k = 1:m
-    v = A * Q(:,k); % get a new vector
+    for k = 1:m
+        v = A * Q(:,k); % 计算新向量
         
-        % Gram-Schmidt orthogonalization
+        % Gram-Schmidt 正交化
         for j = 1:k
-            H(j,k) = Q(:,j)' * v;    %calculate the projection
-            v = v - H(j,k) * Q(:,j);   % subtracted by projections
+            H(j,k) = Q(:,j)' * v;    % 计算投影系数
+            v = v - H(j,k) * Q(:,j);   % 从 v 中减去投影部分
         end        
         
-        H(k+1, k) = norm(v);         % Calculate the new element of the Hessenberg matrix
+        H(k+1, k) = norm(v);         % 计算新向量的范数
         
-        % Normalize the new orthogonal basis
+        % 如果范数足够大，则归一化
         if H(k+1, k) > 1e-10 
             Q(:,k+1) = v / H(k+1, k);
         else
-            break; % break the iteration
+            break; % 若向量接近零，则提前结束迭代
         end
     end
 end
 
-%% Test the Arnoldi Iteration algorithm and determine Q9
+%% 测试 Arnoldi 迭代及输出 Q 的第9列和 Hessenberg 矩阵 H
+% 10×10 测试矩阵
+A = [3 8 7 3 3 7 2 3 4 8;
+     5 4 1 6 9 8 3 7 1 9;
+     3 6 9 4 8 6 5 6 6 6;
+     5 3 4 7 4 9 2 3 5 1;
+     4 4 2 1 7 4 2 2 4 5;
+     4 2 8 6 6 5 2 1 1 2;
+     2 8 9 5 2 9 4 7 3 3;
+     9 3 2 2 7 3 4 8 7 7;
+     9 1 9 3 3 1 2 7 7 1;
+     9 3 2 2 6 4 4 7 3 5];
+b = rand(10, 1);  % 随机生成初始向量
+m = 9;            % 迭代次数
 
-% 10×10 testing matrix
-A = [3 8 7 3 3 7 2 3 4 8; 5 4 1 6 9 8 3 7 1 9;3 6 9 4 8 6 5 6 6 6;5 3 4 7 4 9 2 3 5 1;4 4 2 1 7 4 2 2 4 5;4 2 8 6 6 5 2 1 1 2; 2 8 9 5 2 9 4 7 3 3;9 3 2 2 7 3 4 8 7 7;9 1 9 3 3 1 2 7 7 1;9 3 2 2 6 4 4 7 3 5];
-
-% Initial vector (I used a random number between 0 and 1 to test) 
-b = rand(10, 1);
-
-% Number of iterations 
-m = 9;
-
-% Run the Arnoldi iteration
 [Q, H] = arnoldi(A, b, m);
 
-%% output Q9 vector
-disp('Q9 vector:')
-disp(Q(:,9))   % display the ninth column of the orthogonal matrix Q
+disp('Q的第9列:');
+disp(Q(:,9));
 
-%% Output Hessenberg matrix H
-disp('Hessenberg Matrix H:')
-disp(H)
-
-
+disp('Hessenberg矩阵 H:');
+disp(H);
